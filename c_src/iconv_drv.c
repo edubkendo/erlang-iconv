@@ -127,7 +127,7 @@ static int driver_send_bin(t_iconvdrv *iv, ErlDrvBinary *bin, int len)
     i = LOAD_BINARY(spec, i, bin, 0, len);
     i = LOAD_TUPLE(spec, i, 3);
 
-    return driver_send_term(iv->port, to, spec, i);
+    return erl_drv_send_term(iv->dport, to, spec, i);
 }
 
 /* send {P, ok} to caller */
@@ -142,7 +142,7 @@ static int driver_send_ok(t_iconvdrv *iv)
     i = LOAD_ATOM(spec, i, am_ok);
     i = LOAD_TUPLE(spec, i, 2);
 
-    return driver_send_term(iv->port, to, spec, i);
+    return erl_drv_send_term(iv->dport, to, spec, i);
 }
 
 /* send {P, error, Error} to caller */
@@ -158,7 +158,7 @@ static int driver_send_error(t_iconvdrv *iv, ErlDrvTermData *am)
     i = LOAD_ATOM(spec, i, *am);
     i = LOAD_TUPLE(spec, i, 3);
 
-    return driver_send_term(iv->port, to, spec, i);
+    return erl_drv_send_term(iv->dport, to, spec, i);
 }
 
 #define CODE_STR_SZ  64
@@ -278,7 +278,7 @@ static void iv_close(t_iconvdrv *iv, iconv_t cd)
     return;
 }
 
-static void iconvdrv_from_erlang(ErlDrvData drv_data, char *buf, int len)
+static void iconvdrv_from_erlang(ErlDrvData drv_data, char *buf, ErlDrvSizeT len)
 {
     t_iconvdrv *iv = (t_iconvdrv *) drv_data;
     char ignore = 0;
@@ -366,6 +366,20 @@ DRIVER_INIT(iconvdrv)
   iconvdrv_driver_entry.ready_output = NULL;
   iconvdrv_driver_entry.driver_name  = "iconv_drv";
   iconvdrv_driver_entry.finish       = NULL;
+  iconvdrv_driver_entry.handle       = NULL;
+  iconvdrv_driver_entry.control      = NULL;
+  iconvdrv_driver_entry.timeout      = NULL;
   iconvdrv_driver_entry.outputv      = NULL;
+  iconvdrv_driver_entry.extended_marker = ERL_DRV_EXTENDED_MARKER;
+  iconvdrv_driver_entry.ready_async  = NULL;
+  iconvdrv_driver_entry.flush        = NULL;
+  iconvdrv_driver_entry.call         = NULL;
+  iconvdrv_driver_entry.event        = NULL;
+  iconvdrv_driver_entry.major_version = ERL_DRV_EXTENDED_MAJOR_VERSION;
+  iconvdrv_driver_entry.minor_version = ERL_DRV_EXTENDED_MINOR_VERSION;
+  iconvdrv_driver_entry.driver_flags  = ERL_DRV_FLAG_USE_PORT_LOCKING;
+  iconvdrv_driver_entry.handle2       = 0;
+  iconvdrv_driver_entry.process_exit  = 0;
+  iconvdrv_driver_entry.stop_select   = 0;
   return &iconvdrv_driver_entry;
 }
